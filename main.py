@@ -1,9 +1,13 @@
+from array import array
 from re import I
 from unittest import runner
 import pygame
 import sys
 import random
 
+'''
+    add a miner
+'''
 
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
@@ -11,6 +15,71 @@ RED = (255, 0, 0)
 WIDTH = 1080
 HEIGHT = 700
 FPS = 60
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, dir_vec) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 20))
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.rect.bottom = y
+        self.rect.centerx = x
+        self.dir_vec = dir_vec
+        self.speed = 15
+    
+
+    def update(self):
+        self.rect.x += self.dir_vec[0] * self.speed
+        self.rect.y += self.dir_vec[1] * self.speed
+        if self.rect.x > WIDTH:
+            self.kill()
+
+
+class FireBullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, dir_vec) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 20))
+        self.image.fill(YELLOW)
+        self.rect = self.image.get_rect()
+        self.rect.bottom = y
+        self.rect.centerx = x
+        self.dir_vec = dir_vec
+        self.speed = 15
+    
+
+    def update(self):
+        self.rect.x += self.dir_vec[0] * self.speed
+        self.rect.y += self.dir_vec[1] * self.speed
+        if self.rect.x > WIDTH:
+            self.kill()
+
+
+class FireBoll:
+    def __init__(self) -> None:
+        self.delay = 0
+
+
+    def shoot(self, dir, from_cords) -> list:
+        if self.delay > 0:
+            self.delay -= 1
+            return []
+        bullet = Bullet(*from_cords, (dir, 0))
+        self.delay = 5
+        return [bullet, ]
+
+
+class Flamethrower:
+    def __init__(self) -> None:
+        pass
+
+
+    def shoot(self, dir, from_cords) -> list:
+        bullets = []
+        for i in range(2):
+            bullet = Bullet(*from_cords, (dir, random.uniform(0, 0.6) - 0.3))
+            bullets.append(bullet)
+        return bullets
 
 
 class HealthBar(pygame.sprite.Sprite):
@@ -90,30 +159,9 @@ class Mob(pygame.sprite.Sprite):
 
     def shoot(self, all_sprites):
         if random.randint(0, 60) == 0:
-            bullet = Bullet(self.rect.centerx, self.rect.centery, (1,0))
-            bullet.dir = -1
+            bullet = Bullet(self.rect.centerx, self.rect.centery, (-1,0))
             all_sprites.add(bullet)
             self.bullets.add(bullet)
-
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, dir_vec) -> None:
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((10, 20))
-        self.image.fill(YELLOW)
-        self.rect = self.image.get_rect()
-        self.rect.bottom = y
-        self.rect.centerx = x
-        self.dir_vec = dir_vec
-        self.speed = 15
-        self.dir = 0
-    
-
-    def update(self):
-        self.rect.x += self.dir_vec[0] * self.speed * self.dir
-        self.rect.y += self.dir_vec[1] * self.speed
-        if self.rect.x > WIDTH:
-            self.kill()
 
 
 class Person(pygame.sprite.Sprite):
@@ -130,6 +178,8 @@ class Person(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = 0
         self.delay = 0
+        self.weapon = FireBoll()
+        # self.weapon = Flamethrower()
 
     
     def update(self):
@@ -140,14 +190,9 @@ class Person(pygame.sprite.Sprite):
 
     
     def shoot(self, all_sprites, dir):
-        if self.delay > 0:
-            self.delay -= 1
-            return
-        bullet = Bullet(self.rect.centerx, self.rect.centery, (1,0))
-        bullet.dir = dir
-        all_sprites.add(bullet)
-        self.bullets.add(bullet)
-        self.delay = 5
+        for bullet in self.weapon.shoot(dir, (self.rect.centerx, self.rect.centery)):
+            all_sprites.add(bullet)
+            self.bullets.add(bullet)
     
 
 class Game:
