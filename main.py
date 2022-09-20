@@ -7,7 +7,11 @@ import random
 
 '''
     add a miner
+    the structure of this project more wrong than i think.
+    You need to separate logic of game and sprites. 
+    Class with sprite has to placed separated from class for game logic.
 '''
+
 
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
@@ -15,6 +19,43 @@ RED = (255, 0, 0)
 WIDTH = 1080
 HEIGHT = 700
 FPS = 60
+
+
+class Spritesheet:
+    def __init__(self, filename):
+        try:
+            self.sheet = pygame.image.load(filename).convert()
+        except pygame.error:
+            print('Unable to load spritesheet image:', filename)
+            raise SystemExit
+
+    # Load a specific image from a specific rectangle
+    def image_at(self, rectangle, scale = None, colorkey = None):
+        'Loads image from x,y,x+offset,y+offset'
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        # error this. All black elements on sprite will be invision
+        image.set_colorkey((0,0,0))
+        if colorkey is not None:
+            if colorkey is -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        if scale is None:
+            return image
+        return pygame.transform.scale(image, scale)
+
+    # Load a whole bunch of images and return them as a list
+    def images_at(self, rects, scale = None, colorkey = None):
+        'Loads multiple images, supply a list of coordinates' 
+        return [self.image_at(rect, scale, colorkey) for rect in rects]
+
+    # Load a whole strip of images
+    def load_strip(self, rect, image_count, scale = None, colorkey = None):
+        'Loads a strip of images and returns them as a list'
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, scale, colorkey)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -115,22 +156,30 @@ class HealthBar(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self) -> None:
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((50, 40))
-        self.image.fill(RED)
+        ss = Spritesheet('sprites/Skeleton/SpriteSheets/enemy_walk.png')
+        self.image = ss.image_at((0, 0, 22, 33), (50,80))
+        self.images = ss.load_strip((0, 0, 22, 33), 13, (50,80))
         self.bullets = pygame.sprite.Group()
         self.rect = self.image.get_rect()
         self.attack = 10
         self.total_health = random.randint(1, 10)
         self.health = self.total_health
-        self.vec = (0,0) 
+        self.vec = (-1,0) 
         self.speed = 0
-        self.rect.x = random.randint(100, WIDTH) 
+        # self.rect.x = random.randint(100, WIDTH) 
+        self.rect.x =  200
         self.rect.y = random.randint(100, HEIGHT) 
         self.health_bar = HealthBar(self.rect.x, self.rect.y - 30)
         self.move_time = 0
+        self.sc = 0
     
 
     def update(self):
+        if self.vec[0] > 0:
+            self.sc += 0.2
+            if self.sc > len(self.images)-1:
+                self.sc = 0
+            self.image = self.images[round(self.sc)]
         if 0 < self.rect.x + self.vec[0] * self.speed < WIDTH:
             self.rect.x += self.vec[0] * self.speed
         if 0 < self.rect.y + self.vec[1] * self.speed < HEIGHT:
@@ -152,13 +201,14 @@ class Mob(pygame.sprite.Sprite):
         if self.move_time > 0:
             self.move_time -= 1
         else:
-            self.move_time = random.randint(20, 40) 
-            self.vec = (random.randint(-1, 1), random.randint(-1, 1))
-            self.speed = random.randrange(1, 3)
+            self.move_time = 340 # random.randint(20, 40) 
+            # self.vec = (random.randint(-1, 1), random.randint(-1, 1))
+            self.vec = (self.vec[0]*-1, self.vec[1])
+            self.speed = 1 #random.randrange(1, 3)
     
 
     def shoot(self, all_sprites):
-        if random.randint(0, 60) == 0:
+        if random.randint(0, 60) == -1:
             bullet = Bullet(self.rect.centerx, self.rect.centery, (-1,0))
             all_sprites.add(bullet)
             self.bullets.add(bullet)
@@ -209,7 +259,7 @@ class Game:
         self.mobs = pygame.sprite.Group()
         self.score_font = pygame.font.Font(None, 56)
         self.score_count = 0
-        self.init_mobs(3)
+        self.init_mobs(1)
 
 
     def init_mobs(self, number):
