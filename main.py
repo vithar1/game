@@ -9,7 +9,6 @@ import random
     Class with sprite has to placed separated from class for game logic.
 '''
 
-
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
@@ -27,30 +26,30 @@ class Spritesheet:
             raise SystemExit
 
     # Load a specific image from a specific rectangle
-    def image_at(self, rectangle, scale = None, colorkey = None):
+    def image_at(self, rectangle, scale=None, colorkey=None):
         'Loads image from x,y,x+offset,y+offset'
         rect = pygame.Rect(rectangle)
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         # error this. All black elements on sprite will be invision
-        image.set_colorkey((0,0,0))
+        image.set_colorkey((0, 0, 0))
         if colorkey is not None:
             if colorkey is -1:
-                colorkey = image.get_at((0,0))
+                colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         if scale is None:
             return image
         return pygame.transform.scale(image, scale)
 
     # Load a whole bunch of images and return them as a list
-    def images_at(self, rects, scale = None, colorkey = None):
-        'Loads multiple images, supply a list of coordinates' 
+    def images_at(self, rects, scale=None, colorkey=None):
+        'Loads multiple images, supply a list of coordinates'
         return [self.image_at(rect, scale, colorkey) for rect in rects]
 
     # Load a whole strip of images
-    def load_strip(self, rect, image_count, scale = None, colorkey = None):
+    def load_strip(self, rect, image_count, scale=None, colorkey=None):
         'Loads a strip of images and returns them as a list'
-        tups = [(rect[0], rect[1]+rect[3]*i, rect[2], rect[3])
+        tups = [(rect[0], rect[1] + rect[3] * i, rect[2], rect[3])
                 for i in range(image_count)]
         return self.images_at(tups, scale, colorkey)
 
@@ -62,7 +61,8 @@ class SpriteStripAnim:
     __add__() method for joining strips which comes in handy when a
     strip wraps to the next row.
     """
-    def __init__(self, filename, rect, count, scale = None, colorkey=None, loop=False, frames=1):
+
+    def __init__(self, filename, rect, count, scale=None, colorkey=None, loop=False, frames=1):
         """construct a SpriteStripAnim
         
         filename, rect, count, and colorkey are the same arguments used
@@ -82,12 +82,10 @@ class SpriteStripAnim:
         self.frames = frames
         self.f = frames
 
-
     def iter(self):
         self.i = 0
         self.f = self.frames
         return self
-
 
     def next(self):
         if self.i >= len(self.images):
@@ -102,7 +100,6 @@ class SpriteStripAnim:
             self.f = self.frames
         return image
 
-
     def __add__(self, ss):
         self.images.extend(ss.images)
         return self
@@ -112,13 +109,12 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, dir_vec) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.ss = Spritesheet('sprites/fire_balls/fireboll.png')
-        self.image = self.ss.image_at((0,0,190, 190), (30, 30))
+        self.image = self.ss.image_at((0, 0, 190, 190), (30, 30))
         self.rect = self.image.get_rect()
         self.rect.bottom = y
         self.rect.centerx = x
         self.dir_vec = dir_vec
         self.speed = 15
-    
 
     def update(self):
         self.rect.x += self.dir_vec[0] * self.speed
@@ -137,7 +133,6 @@ class FireBullet(pygame.sprite.Sprite):
         self.rect.centerx = x
         self.dir_vec = dir_vec
         self.speed = 15
-    
 
     def update(self):
         self.rect.x += self.dir_vec[0] * self.speed
@@ -149,7 +144,6 @@ class FireBullet(pygame.sprite.Sprite):
 class FireBoll:
     def __init__(self) -> None:
         self.delay = 0
-
 
     def shoot(self, dir, from_cords) -> list:
         if self.delay > 0:
@@ -163,7 +157,6 @@ class FireBoll:
 class Flamethrower:
     def __init__(self) -> None:
         pass
-
 
     def shoot(self, dir, from_cords) -> list:
         bullets = []
@@ -180,12 +173,11 @@ class HealthBar(pygame.sprite.Sprite):
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
         self.l = 50
-        self.rect.x = x 
+        self.rect.x = x
         self.rect.y = y
-    
 
     def decrease(self, procent):
-        self.l -= int(50/100*procent)
+        self.l -= int(50 / 100 * procent)
         if self.l < 1:
             return
         self.image = pygame.Surface((self.l, 10))
@@ -196,38 +188,35 @@ class HealthBar(pygame.sprite.Sprite):
         else:
             self.image.fill(RED)
 
-
     def follow(self, x, y):
         self.rect.x = x
         self.rect.y = y
-
 
 
 class Mob(pygame.sprite.Sprite):
     def __init__(self) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.s_left_move = SpriteStripAnim('sprites/vampire3.png',
-            (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
+                                           (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
         self.s_right_move = SpriteStripAnim('sprites/vampire3.png',
-            (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
+                                            (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
         self.s_up_move = SpriteStripAnim('sprites/vampire3.png',
-            (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
+                                         (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
         self.s_down_move = SpriteStripAnim('sprites/vampire3.png',
-            (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
+                                           (19, 23, 12, 24), 8, (45, 80), loop=True, frames=12).iter()
         self.image = self.s_left_move.next()
         self.bullets = pygame.sprite.Group()
         self.rect = self.image.get_rect()
         self.attack = 10
         self.total_health = random.randint(1, 10)
         self.health = self.total_health
-        self.vec = (-1,0) 
+        self.vec = (-1, 0)
         self.speed = 0
-        self.rect.x = random.randint(100, WIDTH) 
-        self.rect.y = random.randint(100, HEIGHT) 
+        self.rect.x = random.randint(100, WIDTH)
+        self.rect.y = random.randint(100, HEIGHT)
         self.health_bar = HealthBar(self.rect.x, self.rect.y - 30)
         self.move_time = 0
         self.sc = 0
-    
 
     def update(self):
         if 0 < self.rect.x + self.vec[0] * self.speed < WIDTH:
@@ -235,8 +224,6 @@ class Mob(pygame.sprite.Sprite):
         if 0 < self.rect.y + self.vec[1] * self.speed < HEIGHT:
             self.rect.y += self.vec[1] * self.speed
         self.health_bar.follow(self.rect.x, self.rect.y - 30)
-        
-    
 
     def take_damage(self, damage):
         self.health -= damage
@@ -246,20 +233,18 @@ class Mob(pygame.sprite.Sprite):
             self.kill()
             return "kill"
 
-
     def move(self):
         if self.move_time > 0:
             self.move_time -= 1
         else:
-            self.move_time = random.randint(20, 40) 
+            self.move_time = random.randint(20, 40)
             self.vec = (random.randint(-1, 1), random.randint(-1, 1))
-            self.vec = (self.vec[0]*-1, self.vec[1])
+            self.vec = (self.vec[0] * -1, self.vec[1])
             self.speed = random.randrange(1, 3)
-    
 
     def shoot(self, all_sprites):
         if random.randint(0, 60) == 0:
-            bullet = Bullet(self.rect.centerx, self.rect.centery, (-1,0))
+            bullet = Bullet(self.rect.centerx, self.rect.centery, (-1, 0))
             all_sprites.add(bullet)
             self.bullets.add(bullet)
 
@@ -268,28 +253,27 @@ class Person(pygame.sprite.Sprite):
     def __init__(self) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.s_left_move = SpriteStripAnim('sprites/vampire3.png',
-            (19, 23, 12, 24), 4, (45, 80), loop=True, frames=10).iter()
+                                           (19, 23, 12, 24), 4, (45, 80), loop=True, frames=10).iter()
         self.s_down_move = SpriteStripAnim('sprites/vampire3.png',
-            (33, 23, 15, 24), 4, (45, 80), loop=True, frames=10).iter()
+                                           (33, 23, 15, 24), 4, (45, 80), loop=True, frames=10).iter()
         self.s_right_move = SpriteStripAnim('sprites/vampire3.png',
-            (49, 23, 12, 24), 4, (45, 80), loop=True, frames=10).iter()
+                                            (49, 23, 12, 24), 4, (45, 80), loop=True, frames=10).iter()
         self.s_up_move = SpriteStripAnim('sprites/vampire3.png',
-            (64, 23, 15, 24), 4, (45, 80), loop=True, frames=10).iter()
+                                         (64, 23, 15, 24), 4, (45, 80), loop=True, frames=10).iter()
         self.image = self.s_down_move.next()
         self.bullets = pygame.sprite.Group()
         self.rect = self.image.get_rect()
         self.attack = 10
         self.health = 100
-        self.vec = (0,0) 
+        self.vec = (0, 0)
         self.speed = 0
         self.rect.x = 0
         self.rect.y = 0
         self.delay = 0
         self.weapon = FireBoll()
-        self.dir = (0,1)
+        self.dir = (0, 1)
         # self.weapon = Flamethrower()
 
-    
     def update(self):
         if self.vec[0] > 0.5:
             self.image = self.s_right_move.next()
@@ -303,10 +287,9 @@ class Person(pygame.sprite.Sprite):
             self.rect.x += self.vec[0] * self.speed
         if 0 < self.rect.y + self.vec[1] * self.speed < HEIGHT:
             self.rect.y += self.vec[1] * self.speed
-        if self.vec != (0,0):
+        if self.vec != (0, 0):
             self.dir = self.vec
 
-    
     def shoot(self, all_sprites):
         for bullet in self.weapon.shoot(self.dir, (self.rect.centerx, self.rect.centery)):
             all_sprites.add(bullet)
@@ -317,12 +300,11 @@ class FlorePeace(pygame.sprite.Sprite):
     def __init__(self, pos) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.ss = Spritesheet('sprites/Texture/stone.png')
-        self.image = self.ss.image_at((0,0,96, 96))
+        self.image = self.ss.image_at((0, 0, 96, 96))
         self.rect = self.image.get_rect()
         self.rect.x = pos[0]
         self.rect.y = pos[1]
 
-    
     def update(self):
         pass
 
@@ -331,13 +313,13 @@ class Game:
     def __init__(self) -> None:
         pygame.init()
         pygame.mixer.init()
-        self.screen = pygame.display.set_mode((WIDTH+40, HEIGHT+40))
+        self.screen = pygame.display.set_mode((WIDTH + 40, HEIGHT + 40))
         pygame.display.set_caption('vithar')
         self.clock = pygame.time.Clock()
         self.all_sprites = pygame.sprite.Group()
-        for i in range(int(HEIGHT/96)+1):
-            for j in range(int(WIDTH/96)+1):
-                self.all_sprites.add(FlorePeace((j*96,i*96)))
+        for i in range(int(HEIGHT / 96) + 1):
+            for j in range(int(WIDTH / 96) + 1):
+                self.all_sprites.add(FlorePeace((j * 96, i * 96)))
         self.person = Person()
         self.person.speed = 3
         self.all_sprites.add(self.person)
@@ -346,23 +328,19 @@ class Game:
         self.score_count = 0
         self.init_mobs(3)
 
-
     def init_mobs(self, number):
         for i in range(number):
             self.add_mob()
-
 
     def add_mob(self):
         mob = Mob()
         self.all_sprites.add(mob)
         self.mobs.add(mob)
         self.all_sprites.add(mob.health_bar)
-    
 
     def _set_score(self, score):
         self.score = self.score_font.render('score: {}'.format(score), 1, (180, 180, 180))
-        self.screen.blit(self.score, (0, HEIGHT-30))
-    
+        self.screen.blit(self.score, (0, HEIGHT - 30))
 
     def _key_handle(self):
         for i in pygame.event.get():
@@ -377,10 +355,9 @@ class Game:
         if keys[pygame.K_LEFT]:
             self.person.vec = (-1, 0)
         if keys[pygame.K_RIGHT]:
-            self.person.vec  = (1, 0)
+            self.person.vec = (1, 0)
         if keys[pygame.K_SPACE]:
             self.person.shoot(self.all_sprites)
-    
 
     def _collide_handler(self):
         hits = pygame.sprite.groupcollide(self.mobs, self.person.bullets, False, True)
@@ -392,16 +369,15 @@ class Game:
             person_hit = pygame.sprite.spritecollide(self.person, mob.bullets, True)
             if person_hit:
                 self._end_game()
-                break 
+                break
 
-    
     def _end_game(self):
         end = True
         while end:
             self.screen.fill((30, 30, 30))
             f1 = pygame.font.Font(None, 86)
             text1 = f1.render('Игра окончена!', 1, (180, 180, 180))
-            self.screen.blit(text1, (WIDTH/2-200, HEIGHT/2-100))
+            self.screen.blit(text1, (WIDTH / 2 - 200, HEIGHT / 2 - 100))
             keys = pygame.key.get_pressed()
             if keys[pygame.K_r]:
                 end = False
@@ -412,7 +388,6 @@ class Game:
                 if i.type == pygame.QUIT:
                     sys.exit()
             pygame.display.flip()
-
 
     def run(self):
         running = True
