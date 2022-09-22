@@ -1,6 +1,6 @@
 import unittest
 
-from src.main.objects.units import Unit
+from src.main.objects.units.unit import Unit
 
 
 class UnitTest(unittest.TestCase):
