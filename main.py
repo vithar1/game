@@ -161,7 +161,10 @@ class Flamethrower:
     def shoot(self, dir, from_cords) -> list:
         bullets = []
         for i in range(2):
-            bullet = Bullet(*from_cords, (dir, random.uniform(0, 0.6) - 0.3))
+            if dir[0] != 0:
+                bullet = Bullet(*from_cords, (dir[0], dir[1]*random.uniform(0, 0.6) - 0.3))
+            else:
+                bullet = Bullet(*from_cords, (dir[1]*random.uniform(0, 0.6) - 0.3, dir[0]))
             bullets.append(bullet)
         return bullets
 
@@ -270,9 +273,9 @@ class Person(pygame.sprite.Sprite):
         self.rect.x = 0
         self.rect.y = 0
         self.delay = 0
-        self.weapon = FireBoll()
+        # self.weapon = FireBoll()
+        self.weapon = Flamethrower()
         self.dir = (0, 1)
-        # self.weapon = Flamethrower()
 
     def update(self):
         if self.vec[0] > 0.5:
